@@ -1,0 +1,19 @@
+{
+  "atmosphere": { "energy": 0.35, "tone": 0.85, "together": 0.9, "special": 0.85 },
+  "label": "cyanotype",
+  "timeOfDay": "morning",
+  "season": "winter",
+  "contrast": { "has": false },
+  "air": ["snow", "steam"],
+  "captionQuote": "Утром всё стало белым",
+  "folderNames": ["Первый снег у бабушки", "Снеговик во дворе у бабушки", "Блины и первый снег", "Утро, снег и бабушкины истории", "Зима у бабушки"],
+  "voiceStyle": "Говори мягко и светло, не спеша, с теплом и тихим удивлением — как будто вспоминаешь детство.",
+  "bestPhotoIndex": 0,
+  "photoNotes": [
+    { "index": 0, "scene": "заснеженный двор и снеговик", "people": false }
+  ],
+  "music": {
+    "bpm": 85, "beatOffset": 0.128, "barSeconds": 2.824, "rmsEnvelope": [], "rmsMean": 0.56, "brightness": 0.26,
+    "key": "C", "mode": "major", "modeConfidence": 1, "era": "modern", "source": "audio"
+  }
+}

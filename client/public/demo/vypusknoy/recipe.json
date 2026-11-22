@@ -1,0 +1,69 @@
+{
+  "folderName": "Выпускной на набережной",
+  "atmosphere": {
+    "energy": 0.78,
+    "tone": 0.84,
+    "together": 0.95,
+    "special": 0.95
+  },
+  "process": [
+    {
+      "id": "kodachrome",
+      "weight": 0.68
+    },
+    {
+      "id": "trichrome",
+      "weight": 0.32
+    }
+  ],
+  "palette": [
+    "#321c33",
+    "#e58763",
+    "#f5b273",
+    "#542d4a",
+    "#8a445d",
+    "#462744"
+  ],
+  "light": {
+    "time": "golden_hour",
+    "warmth": 0.74
+  },
+  "music": {
+    "bpm": 128,
+    "beatOffset": 0.013,
+    "barSeconds": 1.875,
+    "rmsEnvelope": [],
+    "rmsMean": 0.7,
+    "brightness": 0.79,
+    "key": "D",
+    "mode": "major",
+    "modeConfidence": 0.59,
+    "era": "modern",
+    "source": "audio"
+  },
+  "rhythm": {
+    "developBars": 2,
+    "frameHoldBars": 0.25,
+    "transition": "cut"
+  },
+  "composition": "contact_sheet",
+  "bestPhotoIndex": 2,
+  "air": {
+    "particles": [
+      "dust"
+    ],
+    "density": 0.61
+  },
+  "caption": "солнце садилось в реку",
+  "voice": {
+    "style": "Говори живо и радостно, с улыбкой, чуть быстрее обычного — как будто делишься лучшим вечером с друзьями.",
+    "speed": 1.1
+  },
+  "why": [
+    "128 BPM: кадр держится четверть такта, склейки на долях",
+    "Вместе, интенсивно и светло: Kodachrome с долей «трихром» 32%",
+    "Золотой час: тёплый низкий свет",
+    "Особенный день: гуще зерно, сильнее ореолы и выцветание",
+    "6 кадров: контактный лист, кадр дня обведён красным"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "date": "2025-11-19",
+  "text": "Было холодно и ветрено, но мы с мамой пили какао в осеннем парке. Листья шуршали под ногами, мы долго молчали, а потом смеялись вдвоём.",
+  "song": {
+    "source": "deezer",
+    "id": "70079770",
+    "title": "All of Me",
+    "artist": "John Legend",
+    "year": 2013,
+    "genre": "Pop",
+    "coverUrl": "https://cdn-images.dzcdn.net/images/cover/e9a170ca0ae06918f9baa6cb109fb321/500x500-000000-80-0-0.jpg",
+    "link": "https://www.deezer.com/track/70079770"
+  },
+  "placeholder": {
+    "theme": "autumn",
+    "count": 2
+  },
+  "photos": [
+    {
+      "file": "01.jpg",
+      "width": 900,
+      "height": 1125,
+      "palette": [
+        "#e59854",
+        "#3c2215",
+        "#97522c",
+        "#efb470",
+        "#f3c282"
+      ]
+    },
+    {
+      "file": "02.jpg",
+      "width": 1125,
+      "height": 900,
+      "palette": [
+        "#3d2316",
+        "#9a552e",
+        "#e79d5a",
+        "#f0b773",
+        "#f4c991"
+      ]
+    }
+  ]
+}

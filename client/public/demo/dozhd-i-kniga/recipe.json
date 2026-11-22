@@ -1,0 +1,74 @@
+{
+  "folderName": "Дождь, книга и чай у окна",
+  "atmosphere": {
+    "energy": 0.17,
+    "tone": 0.37,
+    "together": 0.1,
+    "special": 0.2
+  },
+  "process": [
+    {
+      "id": "double_exposure",
+      "weight": 0.66
+    },
+    {
+      "id": "platinum",
+      "weight": 0.34
+    }
+  ],
+  "palette": [
+    "#687480",
+    "#3a414a",
+    "#505b66",
+    "#7c8894",
+    "#8b97a3",
+    "#737c86"
+  ],
+  "splitTone": {
+    "shadows": "#4b658b",
+    "highlights": "#896f49",
+    "amount": 0.38
+  },
+  "light": {
+    "time": "day",
+    "warmth": -0.05
+  },
+  "music": {
+    "bpm": 75,
+    "beatOffset": 0.067,
+    "barSeconds": 3.2,
+    "rmsEnvelope": [],
+    "rmsMean": 0.35,
+    "brightness": 0.31,
+    "key": "A",
+    "mode": "minor",
+    "modeConfidence": 1,
+    "era": "nineties",
+    "source": "audio"
+  },
+  "rhythm": {
+    "developBars": 4,
+    "frameHoldBars": 1,
+    "transition": "dissolve"
+  },
+  "composition": "sequence",
+  "bestPhotoIndex": 0,
+  "air": {
+    "particles": [
+      "rain",
+      "steam"
+    ],
+    "density": 0.37
+  },
+  "caption": "капли стучат по подоконнику",
+  "voice": {
+    "style": "Говори очень тихо и медленно, с паузами, задумчиво — как будто думаешь вслух под шум дождя.",
+    "speed": 0.94
+  },
+  "why": [
+    "75 BPM: кадр держится такт, мягкие наплывы",
+    "Наедине, тихо и тяжело: двойная экспозиция с долей «платинотипия» 34%",
+    "«грустно, но спокойно»: холодные тени, тёплые света",
+    "Минор: тон тяжелее, проявка за 4 такта"
+  ]
+}

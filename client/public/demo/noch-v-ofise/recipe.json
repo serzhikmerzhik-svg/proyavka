@@ -1,0 +1,69 @@
+{
+  "folderName": "Ночь в офисе перед сдачей",
+  "atmosphere": {
+    "energy": 0.76,
+    "tone": 0.23,
+    "together": 0.55,
+    "special": 0.3
+  },
+  "process": [
+    {
+      "id": "push_montage",
+      "weight": 0.65
+    },
+    {
+      "id": "solarization",
+      "weight": 0.35
+    }
+  ],
+  "palette": [
+    "#0a111d",
+    "#131e32",
+    "#6ab0c1",
+    "#14253b",
+    "#1f3044",
+    "#0a111c"
+  ],
+  "light": {
+    "time": "night",
+    "warmth": -0.31
+  },
+  "music": {
+    "bpm": 126,
+    "beatOffset": 0.143,
+    "barSeconds": 1.905,
+    "rmsEnvelope": [],
+    "rmsMean": 0.48,
+    "brightness": 0.8,
+    "key": "C#",
+    "mode": "minor",
+    "modeConfidence": 0.08,
+    "era": "digicam",
+    "source": "audio"
+  },
+  "rhythm": {
+    "developBars": 2,
+    "frameHoldBars": 0.25,
+    "transition": "cut"
+  },
+  "composition": "strip",
+  "bestPhotoIndex": 1,
+  "air": {
+    "particles": [
+      "steam"
+    ],
+    "density": 0.6
+  },
+  "caption": "кофе уже не помогает",
+  "voice": {
+    "style": "Говори сдержанно и чуть быстрее обычного, с усталостью и напряжением в голосе, без драматизма.",
+    "speed": 1.09
+  },
+  "why": [
+    "126 BPM: кадр держится четверть такта, склейки на долях",
+    "В своём ритме, интенсивно и тяжело: пуш-монтаж с долей «соляризация» 35%",
+    "Ночь: низкий ключ и ореолы",
+    "4 кадра в быстром темпе: плёночная полоса",
+    "Минор: тон тяжелее, проявка за 2 такта"
+  ]
+}

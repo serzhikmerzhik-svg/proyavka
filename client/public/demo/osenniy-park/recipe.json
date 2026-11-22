@@ -1,0 +1,75 @@
+{
+  "folderName": "Осенний парк и какао",
+  "atmosphere": {
+    "energy": 0.21,
+    "tone": 0.73,
+    "together": 0.85,
+    "special": 0.35
+  },
+  "process": [
+    {
+      "id": "autochrome",
+      "weight": 0.56
+    },
+    {
+      "id": "cyanotype",
+      "weight": 0.44
+    }
+  ],
+  "palette": [
+    "#e59854",
+    "#3c2215",
+    "#97522c",
+    "#efb470",
+    "#f3c282",
+    "#3d2316"
+  ],
+  "splitTone": {
+    "shadows": "#30344b",
+    "highlights": "#efa34f",
+    "amount": 0.4
+  },
+  "light": {
+    "time": "golden_hour",
+    "warmth": 0.69
+  },
+  "music": {
+    "bpm": 61,
+    "beatOffset": 0.23,
+    "barSeconds": 3.934,
+    "rmsEnvelope": [],
+    "rmsMean": 0.33,
+    "brightness": 0.44,
+    "key": "D#",
+    "mode": "major",
+    "modeConfidence": 1,
+    "era": "modern",
+    "source": "audio"
+  },
+  "rhythm": {
+    "developBars": 4,
+    "frameHoldBars": 1,
+    "transition": "dissolve"
+  },
+  "composition": "diptych",
+  "bestPhotoIndex": 0,
+  "air": {
+    "particles": [
+      "steam",
+      "leaves"
+    ],
+    "density": 0.38
+  },
+  "caption": "Листья шуршали под ногами",
+  "voice": {
+    "style": "Говори тихо и тепло, чуть медленнее обычного, с улыбкой в голосе — как будто рассказываешь близкому человеку.",
+    "speed": 0.95
+  },
+  "why": [
+    "61 BPM: кадр держится такт, мягкие наплывы",
+    "Вдвоём, тихо и светло: автохром с долей «цианотипия» 44%",
+    "«холодно, но какао»: холодные тени, тёплые света",
+    "Золотой час: тёплый низкий свет",
+    "Два кадра и близость: диптих"
+  ]
+}

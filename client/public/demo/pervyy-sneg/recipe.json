@@ -1,0 +1,69 @@
+{
+  "folderName": "Первый снег у бабушки",
+  "atmosphere": {
+    "energy": 0.33,
+    "tone": 0.81,
+    "together": 0.9,
+    "special": 0.85
+  },
+  "process": [
+    {
+      "id": "autochrome",
+      "weight": 0.58
+    },
+    {
+      "id": "cyanotype",
+      "weight": 0.42
+    }
+  ],
+  "palette": [
+    "#d1e0ef",
+    "#ebf1f8",
+    "#fafbfd",
+    "#846653",
+    "#c0d5ea"
+  ],
+  "light": {
+    "time": "morning",
+    "warmth": 0.22
+  },
+  "music": {
+    "bpm": 85,
+    "beatOffset": 0.128,
+    "barSeconds": 2.824,
+    "rmsEnvelope": [],
+    "rmsMean": 0.56,
+    "brightness": 0.26,
+    "key": "C",
+    "mode": "major",
+    "modeConfidence": 1,
+    "era": "modern",
+    "source": "audio"
+  },
+  "rhythm": {
+    "developBars": 4,
+    "frameHoldBars": 1,
+    "transition": "dissolve"
+  },
+  "composition": "single",
+  "bestPhotoIndex": 0,
+  "air": {
+    "particles": [
+      "snow",
+      "steam"
+    ],
+    "density": 0.43
+  },
+  "caption": "Утром всё стало белым",
+  "voice": {
+    "style": "Говори мягко и светло, не спеша, с теплом и тихим удивлением — как будто вспоминаешь детство.",
+    "speed": 0.98
+  },
+  "why": [
+    "85 BPM: кадр держится такт, мягкие наплывы",
+    "Вместе, тихо и светло: автохром с долей «цианотипия» 42%",
+    "Утро: мягкие приподнятые тени",
+    "Особенный день: гуще зерно, сильнее ореолы и выцветание",
+    "Мажор: тон светлее, проявка за 4 такта"
+  ]
+}

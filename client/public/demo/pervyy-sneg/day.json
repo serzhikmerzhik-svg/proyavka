@@ -1,0 +1,32 @@
+{
+  "date": "2026-01-07",
+  "text": "Первый снег у бабушки. Утром всё стало белым, мы лепили снеговика во дворе, а потом бабушка пекла блины и рассказывала, как познакомилась с дедушкой.",
+  "song": {
+    "source": "deezer",
+    "id": "111780376",
+    "title": "Stay With Me",
+    "artist": "Sam Smith",
+    "year": 2015,
+    "genre": "Pop",
+    "coverUrl": "https://cdn-images.dzcdn.net/images/cover/231c66c0ed260c708163eff3bb8458da/500x500-000000-80-0-0.jpg",
+    "link": "https://www.deezer.com/track/111780376"
+  },
+  "placeholder": {
+    "theme": "snow",
+    "count": 1
+  },
+  "photos": [
+    {
+      "file": "01.jpg",
+      "width": 900,
+      "height": 1125,
+      "palette": [
+        "#d1e0ef",
+        "#ebf1f8",
+        "#fafbfd",
+        "#846653",
+        "#c0d5ea"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "atmosphere": { "energy": 0.15, "tone": 0.4, "together": 0.1, "special": 0.2 },
+  "label": "double_exposure",
+  "timeOfDay": "day",
+  "season": "autumn",
+  "contrast": { "has": true, "cold": "грустно", "warm": "спокойно" },
+  "air": ["rain", "steam"],
+  "captionQuote": "капли стучат по подоконнику",
+  "folderNames": ["Дождь, книга и чай у окна", "Весь день дождь за окном", "Подоконник, книга и капли", "Тихий дождливый день дома", "Чай и дождь у окна"],
+  "voiceStyle": "Говори очень тихо и медленно, с паузами, задумчиво — как будто думаешь вслух под шум дождя.",
+  "bestPhotoIndex": 0,
+  "photoNotes": [
+    { "index": 0, "scene": "окно в каплях дождя", "people": false },
+    { "index": 1, "scene": "раскрытая книга и чашка", "people": false },
+    { "index": 2, "scene": "серый двор за стеклом", "people": false }
+  ],
+  "music": {
+    "bpm": 75, "beatOffset": 0.067, "barSeconds": 3.2, "rmsEnvelope": [], "rmsMean": 0.35, "brightness": 0.31,
+    "key": "A", "mode": "minor", "modeConfidence": 1, "era": "nineties", "source": "audio"
+  }
+}

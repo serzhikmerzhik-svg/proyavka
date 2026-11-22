@@ -1,0 +1,11 @@
+node_modules
+dist
+# ключи — только локально
+.env
+.env.*
+!.env.example
+# локальные настройки инструментов
+.claude/
+*.log
+.DS_Store
+Thumbs.db

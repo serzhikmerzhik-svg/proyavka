@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-03",
+  "text": "Весь день шёл дождь. Сидела одна у окна с книгой и чаем, никуда не спешила, слушала, как капли стучат по подоконнику. Немного грустно, но спокойно.",
+  "song": {
+    "source": "deezer",
+    "id": "138539157",
+    "title": "No Surprises",
+    "artist": "Radiohead",
+    "year": 1998,
+    "genre": "Alternative",
+    "coverUrl": "https://cdn-images.dzcdn.net/images/cover/7a378976d3ff1b1fd7b21ee0c7f95fa5/500x500-000000-80-0-0.jpg",
+    "link": "https://www.deezer.com/track/138539157"
+  },
+  "placeholder": {
+    "theme": "rain",
+    "count": 3
+  },
+  "photos": [
+    {
+      "file": "01.jpg",
+      "width": 900,
+      "height": 1125,
+      "palette": [
+        "#687480",
+        "#3a414a",
+        "#505b66",
+        "#7c8894",
+        "#8b97a3"
+      ]
+    },
+    {
+      "file": "02.jpg",
+      "width": 1125,
+      "height": 900,
+      "palette": [
+        "#737c86",
+        "#3a424a",
+        "#57626e",
+        "#84909c",
+        "#cdccc4"
+      ]
+    },
+    {
+      "file": "03.jpg",
+      "width": 900,
+      "height": 1125,
+      "palette": [
+        "#687480",
+        "#364242",
+        "#46515a",
+        "#7c8894",
+        "#8c98a3"
+      ]
+    }
+  ]
+}

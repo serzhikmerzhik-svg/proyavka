@@ -1,0 +1,68 @@
+{
+  "date": "2026-03-12",
+  "text": "Ночь в офисе перед сдачей. Устал так, что болит голова, дедлайн через три часа, кофе уже не помогает. Спорили с коллегами, бегали между столами, тревожно и шумно.",
+  "song": {
+    "source": "deezer",
+    "id": "14383880",
+    "title": "Levels (Radio Edit)",
+    "artist": "Avicii",
+    "year": 2011,
+    "genre": "Dance",
+    "coverUrl": "https://cdn-images.dzcdn.net/images/cover/30bc3d8c348ddddb00c44f28d3120ac5/500x500-000000-80-0-0.jpg",
+    "link": "https://www.deezer.com/track/14383880"
+  },
+  "placeholder": {
+    "theme": "office",
+    "count": 4
+  },
+  "photos": [
+    {
+      "file": "01.jpg",
+      "width": 900,
+      "height": 1125,
+      "palette": [
+        "#0a111c",
+        "#111d31",
+        "#6eaebb",
+        "#142239",
+        "#1e3f59"
+      ]
+    },
+    {
+      "file": "02.jpg",
+      "width": 1125,
+      "height": 900,
+      "palette": [
+        "#0a111d",
+        "#131e32",
+        "#6ab0c1",
+        "#14253b",
+        "#1f3044"
+      ]
+    },
+    {
+      "file": "03.jpg",
+      "width": 900,
+      "height": 1125,
+      "palette": [
+        "#0b121d",
+        "#111e32",
+        "#7ab0b8",
+        "#152339",
+        "#275671"
+      ]
+    },
+    {
+      "file": "04.jpg",
+      "width": 1125,
+      "height": 900,
+      "palette": [
+        "#0a111c",
+        "#111d32",
+        "#60b3ce",
+        "#14263d",
+        "#273848"
+      ]
+    }
+  ]
+}

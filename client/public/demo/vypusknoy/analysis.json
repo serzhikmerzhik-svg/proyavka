@@ -1,0 +1,24 @@
+{
+  "atmosphere": { "energy": 0.85, "tone": 0.9, "together": 0.95, "special": 0.95 },
+  "label": "kodachrome",
+  "timeOfDay": "golden_hour",
+  "season": "summer",
+  "contrast": { "has": false },
+  "air": ["dust"],
+  "captionQuote": "солнце садилось в реку",
+  "folderNames": ["Выпускной на набережной", "Танцы у воды на закате", "Все вместе у реки", "Набережная и последний звонок", "Закат над рекой после выпускного"],
+  "voiceStyle": "Говори живо и радостно, с улыбкой, чуть быстрее обычного — как будто делишься лучшим вечером с друзьями.",
+  "bestPhotoIndex": 2,
+  "photoNotes": [
+    { "index": 0, "scene": "набережная перед закатом", "people": false },
+    { "index": 1, "scene": "друзья танцуют у воды", "people": true },
+    { "index": 2, "scene": "все вместе на фоне реки", "people": true },
+    { "index": 3, "scene": "солнце над рекой", "people": false },
+    { "index": 4, "scene": "объятия на ступенях", "people": true },
+    { "index": 5, "scene": "огни на воде в сумерках", "people": false }
+  ],
+  "music": {
+    "bpm": 128, "beatOffset": 0.013, "barSeconds": 1.875, "rmsEnvelope": [], "rmsMean": 0.7, "brightness": 0.79,
+    "key": "D", "mode": "major", "modeConfidence": 0.59, "era": "modern", "source": "audio"
+  }
+}
