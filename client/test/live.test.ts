@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import JSZip from 'jszip';
 import { windowLayout, type Rect } from '../src/render/composition';
+import { slideAt, slideTimeline, slideshowSeconds } from '../src/render/slides';
 import { normalizeDepth } from '../src/analysis/depthNormalize';
 import { buildDayZip, dayFolderName } from '../src/storage/zip';
 import { buildRecipe } from '../src/recipe/buildRecipe';
@@ -116,7 +117,35 @@ test('ZIP папки дня: структура по разделу 7, без а
   const song = JSON.parse(await back.file(`${dir}song.json`)!.async('string'));
   assert.equal(song.title, 'Песня');
   assert.equal(song.music.bpm, 72);
-  assert.ok(!files.some((f) => /\.(mp3|m4a|wav|ogg)$/.test(f) && !f.endsWith('voice.mp3')), 'аудио песни в папку не попадает');
+  assert.ok(!files.some((f) => /\.(mp3|m4a|wav|ogg)$/.test(f) && !/voice\.(mp3|wav)$/.test(f)), 'аудио песни в папку не попадает');
   assert.deepEqual(JSON.parse(await back.file(`${dir}recipe.json`)!.async('string')), JSON.parse(JSON.stringify(recipe)));
   assert.match(await back.file(`${dir}text.md`)!.async('string'), /^# Осенний парк и какао/);
+});
+
+type TimelineInput = Parameters<typeof slideTimeline>[0];
+
+test('слайд-шоу: кадр держится 2–4 такта (яркий день — короче), наплыв две доли, склейка — без наплыва', () => {
+  const base = { music: { barSeconds: 2, bpm: 120 }, rhythm: { transition: 'dissolve' } };
+  const calm = slideTimeline({ ...base, atmosphere: { energy: 0.2 } } as unknown as TimelineInput);
+  const bright = slideTimeline({ ...base, atmosphere: { energy: 0.9 } } as unknown as TimelineInput);
+  assert.equal(calm.hold, 8); // 4 такта по 2 с
+  assert.equal(bright.hold, 4); // 2 такта
+  assert.equal(calm.fade, 1); // две доли по 0,5 с
+  assert.equal(calm.intro, 4); // первый кадр проявляется два такта
+  const cut = slideTimeline({ ...base, rhythm: { transition: 'cut' }, atmosphere: { energy: 0.5 } } as unknown as TimelineInput);
+  assert.equal(cut.fade, 0);
+});
+
+test('слайд-шоу: первый кадр длиннее (проявка), наплыв — в конце кадра, ролик 15–60 с', () => {
+  const tl = { intro: 4, hold: 8, fade: 1 };
+  assert.equal(slideAt(0, tl).k, 0);
+  assert.equal(slideAt(11.9, tl).k, 0); // 4 + 8
+  assert.equal(slideAt(12.1, tl).k, 1);
+  assert.equal(slideAt(10, tl).fade, 0);
+  const mid = slideAt(11.5, tl); // середина наплыва
+  assert.ok(mid.fade > 0.4 && mid.fade < 0.6);
+  assert.ok(mid.next > 0 && mid.next < 0.1); // следующий кадр только появился — наезд с начала
+  assert.equal(slideshowSeconds(1, tl), 15);
+  assert.equal(slideshowSeconds(6, tl), 52.5); // 4 + 6·8 + 0,5
+  assert.equal(slideshowSeconds(20, tl), 60);
 });

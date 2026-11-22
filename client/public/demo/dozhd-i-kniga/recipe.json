@@ -17,16 +17,16 @@
     }
   ],
   "palette": [
-    "#687480",
-    "#3a414a",
-    "#505b66",
-    "#7c8894",
-    "#8b97a3",
-    "#737c86"
+    "#43362a",
+    "#c0b6ab",
+    "#dfded9",
+    "#7b6753",
+    "#ad896d",
+    "#101412"
   ],
   "splitTone": {
-    "shadows": "#4b658b",
-    "highlights": "#896f49",
+    "shadows": "#162c49",
+    "highlights": "#ce9a5e",
     "amount": 0.38
   },
   "light": {

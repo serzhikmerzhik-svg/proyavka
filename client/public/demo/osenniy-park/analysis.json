@@ -1,20 +1,55 @@
 {
-  "atmosphere": { "energy": 0.3, "tone": 0.75, "together": 0.85, "special": 0.35 },
+  "atmosphere": {
+    "energy": 0.3,
+    "tone": 0.75,
+    "together": 0.85,
+    "special": 0.35
+  },
   "label": "autochrome",
   "timeOfDay": "golden_hour",
   "season": "autumn",
-  "contrast": { "has": true, "cold": "холодно", "warm": "какао" },
-  "air": ["steam", "leaves"],
+  "contrast": {
+    "has": true,
+    "cold": "холодно",
+    "warm": "какао"
+  },
+  "air": [
+    "steam",
+    "leaves"
+  ],
   "captionQuote": "Листья шуршали под ногами",
-  "folderNames": ["Осенний парк и какао", "Какао с мамой в парке", "Ветер, листья и две кружки", "Вечер в осеннем парке", "Парк, мама и какао"],
+  "folderNames": [
+    "Осенний парк и какао",
+    "Какао с мамой в парке",
+    "Ветер, листья и две кружки",
+    "Вечер в осеннем парке",
+    "Парк, мама и какао"
+  ],
   "voiceStyle": "Говори тихо и тепло, чуть медленнее обычного, с улыбкой в голосе — как будто рассказываешь близкому человеку.",
   "bestPhotoIndex": 0,
   "photoNotes": [
-    { "index": 0, "scene": "аллея в закатном свете", "people": false },
-    { "index": 1, "scene": "скамейка и кружки какао", "people": true }
+    {
+      "index": 0,
+      "scene": "взрослый с ребёнком на аллее в рыжей листве",
+      "people": true
+    },
+    {
+      "index": 1,
+      "scene": "прохожие под красными кронами",
+      "people": true
+    }
   ],
   "music": {
-    "bpm": 61, "beatOffset": 0.23, "barSeconds": 3.934, "rmsEnvelope": [], "rmsMean": 0.33, "brightness": 0.44,
-    "key": "D#", "mode": "major", "modeConfidence": 1, "era": "modern", "source": "audio"
+    "bpm": 61,
+    "beatOffset": 0.23,
+    "barSeconds": 3.934,
+    "rmsEnvelope": [],
+    "rmsMean": 0.33,
+    "brightness": 0.44,
+    "key": "D#",
+    "mode": "major",
+    "modeConfidence": 1,
+    "era": "modern",
+    "source": "audio"
   }
 }

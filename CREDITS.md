@@ -56,8 +56,27 @@ Calvin Harris — Summer, Radiohead — No Surprises. Аудио в репози
 
 ## Изображения
 
-Фото демо-дней — процедурные заглушки (градиенты и фигуры, `client/scripts/build-demo.ts`), не нейросеть.
+Фото демо-дней — с [Unsplash](https://unsplash.com) по [лицензии Unsplash](https://unsplash.com/license)
+(бесплатно, без разрешения автора). Выбраны снимки, где люди не узнаваемы: со спины, силуэтами, издалека —
+правила хакатона не разрешают снимки людей без их согласия. Тексты дней вымышленные. Без фото в папке
+`build-demo.ts` рисует процедурные заглушки (градиенты и фигуры, не нейросеть).
+
+| день | кадр | автор |
+| --- | --- | --- |
+| Осенний парк и какао | 01, 02 | [@eduartography](https://unsplash.com/@eduartography), [@tkhao_khoang](https://unsplash.com/@tkhao_khoang) |
+| Ночь в офисе перед сдачей | 01, 02, 03 | [@irzvn_](https://unsplash.com/@irzvn_), [@rc820](https://unsplash.com/@rc820), [@t0nn](https://unsplash.com/@t0nn) |
+| Первый снег у бабушки | 01 | [@thomaslrdeau](https://unsplash.com/@thomaslrdeau) |
+| Выпускной на набережной | 01–05 | [@juliesdfg](https://unsplash.com/@juliesdfg), [@kris_tian](https://unsplash.com/@kris_tian), [@zoshuacolah](https://unsplash.com/@zoshuacolah), [@tonyrocket](https://unsplash.com/@tonyrocket), [@clintoinks_0522](https://unsplash.com/@clintoinks_0522) |
+| Дождь, книга и чай у окна | 01, 02 | [@helloaesthe](https://unsplash.com/@helloaesthe), [@anamarkovych](https://unsplash.com/@anamarkovych) |
+
 Тестовая таблица `/lab` рисуется кодом; цвета полей — приблизительные значения классической таблицы ColorChecker.
+
+## Голос на устройстве
+
+Piper (VITS) через [@diffusionstudio/vits-web](https://github.com/diffusionstudio/vits-web) (MIT), голос
+`ru_RU-irina-medium` из [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices); модель скачивается
+с Hugging Face в браузер при первой озвучке. Голос синтезированный: модель обучена на открытом речевом датасете
+(лицензия и происхождение — в MODEL_CARD голоса), это не клон голоса знакомого человека.
 
 ## Алгоритмы
 

@@ -77,18 +77,24 @@ export class SongPlayer implements Clock {
     this.music.gain.linearRampToValueAtTime(level, t + seconds);
   }
 
-  /** Озвучка поверх музыки: музыка приглушается, пока звучит голос. Возвращает длительность, с. */
-  async playVoice(mp3: Blob): Promise<number> {
-    const buf = await this.ctx.decodeAudioData(await mp3.arrayBuffer());
+  /** Озвучка поверх музыки: музыка приглушается, пока звучит голос. rate — темп голоса. Возвращает длительность, с. */
+  async playVoice(audio: Blob, rate = 1): Promise<number> {
+    const buf = await this.ctx.decodeAudioData(await audio.arrayBuffer());
     this.voiceSource?.stop();
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
+    src.playbackRate.value = rate;
     src.connect(this.voice);
     this.rampMusic(DUCKED, 0.8);
     src.onended = () => this.rampMusic(MUSIC_LEVEL, 1.5);
     src.start(this.ctx.currentTime + 0.3);
     this.voiceSource = src;
-    return buf.duration + 0.3;
+    return buf.duration / rate + 0.3;
+  }
+
+  /** Приглушить музыку под голос, который звучит не через этот граф (голос браузера). */
+  duck(on: boolean) {
+    this.rampMusic(on ? DUCKED : MUSIC_LEVEL, on ? 0.8 : 1.5);
   }
 
   /** Дорожка для MediaRecorder: всё, что слышно, — музыка и голос. */

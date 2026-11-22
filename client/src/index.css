@@ -72,6 +72,24 @@
   --stage: #17172a;
   --glow: rgba(124, 92, 255, 0.45);
 }
+/* Нейросеть — тёмное стекло, фиолетово-бирюзовый перелив, свечение и искры ✦ (эффекты — в конце файла) */
+:root[data-theme='ai'] {
+  --bg: #07070d;
+  --bg-2: #0e0e1a;
+  --surface: rgba(140, 160, 255, 0.06);
+  --surface-strong: rgba(140, 160, 255, 0.11);
+  --line: rgba(150, 170, 255, 0.18);
+  --text: #eef0ff;
+  --dim: #8e93b8;
+  --accent: #7b61ff;
+  --accent-ink: #ffffff;
+  --accent-2: #22d3ee;
+  --stage: #13123a;
+  --glow: rgba(123, 97, 255, 0.5);
+  --ticket: #e9e6ff;
+  --ticket-ink: #16133a;
+  --ai-gradient: linear-gradient(110deg, #7b61ff 0%, #c084fc 30%, #22d3ee 62%, #7b61ff 100%);
+}
 :root[data-theme='polaroid'] {
   --bg: #f4f1ea;
   --bg-2: #ffffff;
@@ -166,6 +184,17 @@ a { color: inherit; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); }
 /* ИИ-оживление — отдельная опция, отличается от остальных билетов */
 .btn.ai { background: linear-gradient(115deg, var(--accent), var(--accent-2)); color: var(--accent-ink); }
+
+/* «Отпечаток / Слайд-шоу» — один день, два способа проявить */
+.view-switch { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
+.view-switch button {
+  border: 0; background: transparent; color: var(--dim); cursor: pointer;
+  font: 500 0.72rem var(--mono); letter-spacing: 0.03em; padding: 6px 12px; border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+.view-switch button:hover { color: var(--text); }
+.view-switch button[aria-checked='true'] { background: var(--accent); color: var(--accent-ink); }
+.view-switch button:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 1px; }
 .btn.ghost { background: transparent; color: var(--text); border: 1.5px dashed color-mix(in srgb, var(--text) 32%, transparent); }
 .btn.small { --notch: 5px; padding: 7px 15px; font-size: 0.72rem; }
 .btn.big { --notch: 9px; padding: 15px 26px; font-size: 0.9rem; }
@@ -290,6 +319,7 @@ input[type='range'] { accent-color: var(--accent); }
   pointer-events: none; animation: pulse 2.4s ease-in-out infinite; white-space: nowrap;
 }
 .hint.subtle { color: var(--dim); animation: none; }
+.hint.high { bottom: auto; top: 24%; }
 @keyframes pulse { 50% { opacity: 0.45; } }
 
 /* плавающая стеклянная панель */
@@ -424,6 +454,48 @@ input[type='range'] { accent-color: var(--accent); }
   .develop-bar { margin: 0 8px 8px; }
   .mood-axis input { width: 90px; }
 }
+
+/* ============ Тема «Нейросеть»: перелив, стекло, свечение ============ */
+@keyframes ai-shift { to { background-position: 200% 0; } }
+@keyframes ai-spark { 0%, 100% { opacity: 0.55; transform: scale(0.85) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
+
+/* кнопка ИИ-оживления переливается во всех палитрах — это функция нейросети */
+.btn.ai { background: linear-gradient(110deg, var(--accent), var(--accent-2), var(--accent)); background-size: 200% 100%; animation: ai-shift 5s linear infinite; }
+
+:root[data-theme='ai'] body {
+  background:
+    radial-gradient(900px 520px at 8% -8%, rgba(123, 97, 255, 0.22), transparent 62%),
+    radial-gradient(760px 480px at 108% 12%, rgba(34, 211, 238, 0.14), transparent 60%),
+    radial-gradient(700px 500px at 50% 115%, rgba(192, 132, 252, 0.12), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+:root[data-theme='ai'] .btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05));
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(170, 180, 255, 0.38), inset 0 0 18px rgba(123, 97, 255, 0.22);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+:root[data-theme='ai'] .btn.primary,
+:root[data-theme='ai'] .btn.ai {
+  background: var(--ai-gradient); background-size: 200% 100%; color: #fff;
+  box-shadow: inset 0 0 14px rgba(255, 255, 255, 0.35);
+  animation: ai-shift 6s linear infinite;
+}
+:root[data-theme='ai'] .btn.primary::after { content: '✦'; display: inline-block; animation: ai-spark 2.2s ease-in-out infinite; }
+:root[data-theme='ai'] .btn.ghost { background: transparent; border-color: rgba(170, 180, 255, 0.4); box-shadow: none; }
+:root[data-theme='ai'] .entrance-title {
+  background: var(--ai-gradient); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: ai-shift 10s linear infinite;
+  filter: drop-shadow(0 0 24px rgba(123, 97, 255, 0.35));
+}
+:root[data-theme='ai'] .contact img { box-shadow: 0 0 0 1px var(--line), 0 10px 34px rgba(123, 97, 255, 0.2); }
+:root[data-theme='ai'] .contact:hover img { box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.5), 0 14px 44px rgba(123, 97, 255, 0.45); }
+:root[data-theme='ai'] .develop-bar,
+:root[data-theme='ai'] .topbar { border-color: rgba(150, 170, 255, 0.22); }
+:root[data-theme='ai'] .view-switch button[aria-checked='true'] { background: var(--ai-gradient); background-size: 200% 100%; animation: ai-shift 6s linear infinite; }
+.swatch-ai { background: conic-gradient(from 210deg, #7b61ff, #22d3ee, #c084fc, #7b61ff); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

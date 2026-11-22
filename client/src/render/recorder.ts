@@ -40,9 +40,13 @@ export class DevelopRecorder {
     return this.rec.state === 'recording';
   }
 
-  /** Кадр видео: стол + текущий отпечаток с экрана (вписан по центру). */
-  draw(source: HTMLCanvasElement) {
+  /** Кадр видео: стол + текущий отпечаток с экрана (вписан по центру); rect — только эта часть экрана. */
+  draw(source: HTMLCanvasElement, rect?: { x: number; y: number; w: number; h: number }) {
     const { width: W, height: H } = this.canvas;
+    if (rect) {
+      this.ctx.drawImage(source, rect.x, rect.y, rect.w, rect.h, 0, 0, W, H);
+      return;
+    }
     drawTable(this.ctx, W, H);
     const s = Math.min(W / source.width, H / source.height);
     const w = source.width * s;

@@ -4,6 +4,7 @@
  */
 import { PrintRenderer, loadImage, type PhotoSource } from './renderer';
 import { loadVideo, unloadVideo, type LoadedVideo } from './video';
+import { slideAt, type SlideTimeline } from './slides';
 import { resolveParams } from './params';
 import { drawBase, drawFrameNumbers, drawPencilCircle, windowLayout, type WindowLayout } from './composition';
 import { COLORS, computeLayout, drawPrint, drawTable, ensureFonts } from './compositor';
@@ -69,6 +70,68 @@ export class PrintScene {
     this.motion = { ...(await loadVideo(blob)), index };
   }
 
+  /** ИИ-оживление включается, когда снимок проявился, и всегда с начала петли; при «меньше движения» — нет. */
+  private liveMotion(f: SceneFrame) {
+    const m = this.motion && f.develop >= 1 && !f.reduced ? this.motion : null;
+    if (m && !this.motionLive) {
+      this.motionLive = true;
+      m.video.currentTime = 0;
+      void m.video.play().catch(() => undefined);
+    } else if (!m && this.motionLive) {
+      this.motionLive = false;
+      this.motion?.video.pause();
+    }
+    return m && m.video.readyState >= 2 ? m : null;
+  }
+
+  /**
+   * Слайд-шоу: кадры дня по очереди во весь вертикальный кадр, через тот же шейдер (процесс, палитра,
+   * зерно на долях, частицы, глубина). Наезд камеры и наплыв — в 2D поверх готового кадра.
+   */
+  drawSlides(f: SceneFrame, tl: SlideTimeline): { win: HTMLCanvasElement; slide: number; slides: number; seg: number } {
+    const r = this.recipe;
+    const n = this.imgs.length;
+    const best = Math.min(r.bestPhotoIndex, n - 1);
+    const order = [best, ...this.imgs.map((_, i) => i).filter((i) => i !== best)];
+    const live = this.liveMotion(f);
+    const src = (i: number): PhotoSource => (live && i === live.index ? live.video : this.imgs[i]);
+    const s = f.reduced ? { ...slideAt(f.t, tl), p: 0.5, next: 0.5 } : slideAt(f.t, tl);
+    // спокойный день — едва заметный наезд, яркий — заметнее
+    const amp = f.reduced ? 0 : 0.05 + 0.07 * r.atmosphere.energy;
+    const ctx = this.ctx;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, this.W, this.H);
+
+    const draw = (k: number, p: number, alpha: number) => {
+      const i = order[k % n];
+      this.renderer.resize(this.W, this.H);
+      this.renderer.setFrameAspect(this.W / this.H);
+      this.renderer.setPhotos(src(i), src(i), src(order[(k + 1) % n]));
+      this.renderer.setDepth(this.depths[i] ?? null);
+      this.renderer.render({
+        time: f.time, develop: f.develop, beat: f.beat, rms: f.rms, seed: f.seed, mix: 0,
+        parallax: f.parallax, airTime: f.airTime, frameSeed: k,
+      });
+      // чётные кадры — наезд, нечётные — отъезд; направление сдвига у каждого своё
+      const z = 1 + amp * (k % 2 === 0 ? p : 1 - p);
+      const sw = this.W / z;
+      const sh = this.H / z;
+      const mx = (this.W - sw) / 2;
+      const my = (this.H - sh) / 2;
+      const ang = k * 2.399;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(
+        this.renderer.canvas,
+        mx + Math.cos(ang) * mx * (2 * p - 1) * 0.9, my + Math.sin(ang) * my * (2 * p - 1) * 0.9, sw, sh,
+        0, 0, this.W, this.H,
+      );
+      ctx.globalAlpha = 1;
+    };
+    draw(s.k, s.p, 1);
+    if (s.fade > 0) draw(s.k + 1, s.next, s.fade);
+    return { win: this.window, slide: s.k % n, slides: n, seg: s.seg };
+  }
+
   /** Видно ли сейчас ИИ-оживление — тогда на отпечатке нужна пометка. */
   get motionShown(): boolean {
     return this.motionLive;
@@ -115,17 +178,7 @@ export class PrintScene {
     const best = Math.min(r.bestPhotoIndex, n - 1);
     const order = [best, ...this.imgs.map((_, i) => i).filter((i) => i !== best)];
 
-    // ИИ-оживление включается, когда снимок проявился, и всегда с начала петли; при «меньше движения» — нет
-    const m = this.motion && f.develop >= 1 && !f.reduced ? this.motion : null;
-    if (m && !this.motionLive) {
-      this.motionLive = true;
-      m.video.currentTime = 0;
-      void m.video.play().catch(() => undefined);
-    } else if (!m && this.motionLive) {
-      this.motionLive = false;
-      this.motion?.video.pause();
-    }
-    const live = m && m.video.readyState >= 2 ? m : null;
+    const live = this.liveMotion(f);
     const src = (i: number): PhotoSource => (live && i === live.index ? live.video : this.imgs[i]);
 
     ctx.clearRect(0, 0, this.W, this.H);

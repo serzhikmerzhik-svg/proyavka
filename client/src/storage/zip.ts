@@ -59,7 +59,8 @@ export async function buildDayZip(day: Day, extras: DayZipExtras = {}): Promise<
   dir.file('song.json', JSON.stringify(songJson(day), null, 2));
   dir.file('recipe.json', JSON.stringify(day.recipe, null, 2));
   if (extras.printPng) dir.file('print.png', await extras.printPng.arrayBuffer());
-  if (day.voice) dir.file('voice.mp3', await day.voice.arrayBuffer());
+  // сервер отдаёт mp3, голос на устройстве (Piper) — wav
+  if (day.voice) dir.file(`voice.${/wav/i.test(day.voice.type) ? 'wav' : 'mp3'}`, await day.voice.arrayBuffer());
   const memory = extras.memoryWebm ?? day.memory;
   if (memory) dir.file('memory.webm', await memory.arrayBuffer());
   if (day.motion) dir.file(`motion.${motionExt(day.motion.blob)}`, await day.motion.blob.arrayBuffer());

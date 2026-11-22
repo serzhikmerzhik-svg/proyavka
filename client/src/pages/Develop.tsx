@@ -3,10 +3,30 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { deleteDay, getDay, updateDay } from '../storage/db';
 import { downloadDayZip } from '../storage/zip';
 import { PrintScene, exportPrintPng } from '../render/printScene';
-import { computeLayout, dateStamp, drawPrint, ensureFonts, renderThumb, type PrintLayout } from '../render/compositor';
+import {
+  computeLayout,
+  computeSlideLayout,
+  dateStamp,
+  drawPrint,
+  drawSlideFrame,
+  ensureFonts,
+  renderThumb,
+  type PrintLayout,
+  type SlideLayout,
+} from '../render/compositor';
+import { slideTimeline, slideshowSeconds } from '../render/slides';
 import { DevelopRecorder } from '../render/recorder';
 import { SongPlayer, beatAt, rmsAt } from '../audio/player';
-import { addVoiceToDay, onVoice } from '../audio/voice';
+import {
+  addVoiceToDay,
+  browserVoiceSupported,
+  ensureBrowserVoices,
+  onVoice,
+  pickBrowserVoice,
+  speakInBrowser,
+  type BrowserSpeech,
+} from '../audio/voice';
+import { ON_DEVICE_VOICE_NAME, isOnDeviceVoice, onDeviceRate } from '../audio/piper';
 import { envelopeFromBuffer, fetchPreview } from '../analysis/audioFeatures';
 import { addDepthToDay, onDepth } from '../analysis/depth';
 import { keyRu } from '../analysis/key';
@@ -42,6 +62,18 @@ const PARALLAX = 0.03;
 const MAX_RECORD_S = 60;
 
 type OrientationPermission = { requestPermission?: () => Promise<'granted' | 'denied'> };
+
+/** Два способа проявить один и тот же день: отпечаток на столе или слайд-шоу 9:16. */
+type View = 'print' | 'slides';
+const VIEW_KEY = 'proyavka:view';
+const loadView = (): View => {
+  try {
+    return localStorage.getItem(VIEW_KEY) === 'slides' ? 'slides' : 'print';
+  } catch {
+    return 'print';
+  }
+};
+type Box = { left: number; top: number; width: number; height: number };
 
 /** Почему оживление недоступно — без повтора «ИИ-оживление», если сервер уже так сказал. */
 const motionOff = (reason: string) => (reason.startsWith(MOTION_LABEL) ? reason : `${MOTION_LABEL} недоступно: ${reason}`);
@@ -80,8 +112,15 @@ export default function Develop() {
   const [motionProg, setMotionProg] = useState<MotionProgress | null>(null);
   const [motionAvail, setMotionAvail] = useState<MotionAvailability | null>(null);
   const [, setTick] = useState(0); // секундомер оживления
-  const [cssLayout, setCssLayout] = useState<PrintLayout | null>(null);
+  const [backRect, setBackRect] = useState<Box | null>(null);
+  const [view, setView] = useState<View>(loadView);
+  const [musicFail, setMusicFail] = useState(false);
 
+  const viewRef = useRef<View>(view);
+  const resizeRef = useRef<() => void>(() => {});
+  const slideRectRef = useRef<SlideLayout | null>(null);
+  const browserVoiceRef = useRef(false);
+  const speechRef = useRef<BrowserSpeech | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
@@ -131,10 +170,30 @@ export default function Develop() {
   async function playVoice(dayId: string) {
     const player = playerRef.current;
     if (!player || voicePlayedRef.current || phaseRef.current !== 'live') return;
-    const voice = (await getDay(dayId))?.voice;
-    if (!voice || voicePlayedRef.current) return;
+    const fresh = await getDay(dayId);
+    if (!fresh || voicePlayedRef.current) return;
+    if (!fresh.voice) {
+      // у сервера нет ключа — голос браузера по тем же правилам (в запись видео он не попадает)
+      if (!browserVoiceRef.current) return;
+      await ensureBrowserVoices();
+      if (voicePlayedRef.current || phaseRef.current !== 'live' || playerRef.current !== player) return;
+      const speech = speakInBrowser(fresh.text, recipeRef.current ?? fresh.recipe);
+      if (!speech) return;
+      voicePlayedRef.current = true;
+      speechRef.current = speech;
+      player.duck(true);
+      setVoiceNote(`озвучка: ${speech.voiceName} · синтезированный голос браузера`);
+      void speech.done.then(() => {
+        if (playerRef.current === player) player.duck(false);
+      });
+      return;
+    }
     voicePlayedRef.current = true;
-    const seconds = await player.playVoice(voice);
+    // голос с устройства нейтрален — темп по атмосфере: тихий день медленнее и ниже, яркий живее
+    const onDevice = isOnDeviceVoice(fresh.voice);
+    const rate = onDevice ? onDeviceRate((recipeRef.current ?? fresh.recipe).atmosphere.energy) : 1;
+    if (onDevice) setVoiceNote(`озвучка: ${ON_DEVICE_VOICE_NAME} · синтезированный голос`);
+    const seconds = await player.playVoice(fresh.voice, rate);
     const r = recorderRef.current;
     if (r) r.stopAt = Math.max(r.stopAt, player.now() + seconds + 1);
   }
@@ -151,6 +210,7 @@ export default function Develop() {
     let raf = 0;
     let scene: PrintScene | null = null;
     let layout: PrintLayout | null = null;
+    let slideLayout: SlideLayout | null = null;
     const par = { x: 0, y: 0 };
     let airTime = 0;
     let lastNow = performance.now();
@@ -161,9 +221,23 @@ export default function Develop() {
       canvas.width = Math.round(stage.clientWidth * scale);
       canvas.height = Math.round(stage.clientHeight * scale);
       layout = computeLayout(canvas.width, canvas.height);
-      scene?.resize(layout.photoW, layout.photoH);
-      setCssLayout(computeLayout(stage.clientWidth, stage.clientHeight));
+      // верхняя панель лежит поверх сцены — кадр 9:16 ставим под неё
+      const bar = stage.parentElement?.querySelector('.topbar')?.getBoundingClientRect();
+      const topCss = bar ? Math.max(0, Math.min(bar.bottom - stage.getBoundingClientRect().top, stage.clientHeight * 0.25)) : 0;
+      slideLayout = computeSlideLayout(canvas.width, canvas.height, 0.035, topCss * scale);
+      slideRectRef.current = slideLayout;
+      // окно сцены — под текущий режим; оборот карточки — поверх отпечатка или кадра 9:16
+      if (viewRef.current === 'slides') {
+        scene?.resize(slideLayout.w, slideLayout.h);
+        const s = computeSlideLayout(stage.clientWidth, stage.clientHeight, 0.035, topCss);
+        setBackRect({ left: s.x, top: s.y, width: s.w, height: s.h });
+      } else {
+        scene?.resize(layout.photoW, layout.photoH);
+        const p = computeLayout(stage.clientWidth, stage.clientHeight);
+        setBackRect({ left: p.printX, top: p.printY, width: p.printW, height: p.printH });
+      }
     };
+    resizeRef.current = resize;
     const ro = new ResizeObserver(resize);
 
     // параллакс: курсор над отпечатком или наклон телефона
@@ -203,7 +277,9 @@ export default function Develop() {
       lastNow = now;
       const clock = playerRef.current && phaseRef.current !== 'idle' && phaseRef.current !== 'loading' ? playerRef.current : null;
       const t = clock ? clock.now() : 0;
-      const devDur = recipe.rhythm.developBars * music.barSeconds;
+      // в слайд-шоу проявляется первый кадр (два такта), дальше кадры идут под ритм
+      const tl = viewRef.current === 'slides' && slideLayout ? slideTimeline(recipe) : null;
+      const devDur = tl ? tl.intro : recipe.rhythm.developBars * music.barSeconds;
       const develop = clock ? Math.min(1, t / devDur) : 0;
       const beat = clock && !reduced ? beatAt(t, music) : { pulse: 0, index: 0 };
       const rms = clock ? rmsAt(t, music, loopSecRef.current) : 0.5;
@@ -213,31 +289,43 @@ export default function Develop() {
         airTime += dt * (0.6 + 0.8 * rms); // частицы быстрее, когда громче
       }
 
-      const win = scene.draw({
+      const sceneFrame = {
         t, time: now / 1000, develop, beat: beat.pulse, seed: beat.index, rms,
-        parallax: reduced ? [0, 0] : [-par.x * PARALLAX, par.y * PARALLAX], airTime, reduced,
-      });
-
+        parallax: (reduced ? [0, 0] : [-par.x * PARALLAX, par.y * PARALLAX]) as [number, number], airTime, reduced,
+      };
       // красный фонарь пульсирует на долях и гаснет к концу проявки
       const safelight = clock ? (1 - smooth(0.7, 1, develop)) * (0.7 + 0.3 * beat.pulse) : 0.75;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawPrint(ctx, layout, win, {
-        caption: recipe.caption, date: day.date, develop, safelight,
-        badge: scene.motionShown ? MOTION_LABEL : undefined,
-      });
+      let win: HTMLCanvasElement;
+      if (tl && slideLayout) {
+        const s = scene.drawSlides(sceneFrame, tl);
+        win = s.win;
+        drawSlideFrame(ctx, slideLayout, win, {
+          caption: recipe.caption, date: day.date, title: recipe.folderName, develop, safelight,
+          slide: s.slide, slides: s.slides, seg: s.seg,
+          badge: scene.motionShown ? MOTION_LABEL : undefined,
+        });
+      } else {
+        win = scene.draw(sceneFrame);
+        drawPrint(ctx, layout, win, {
+          caption: recipe.caption, date: day.date, develop, safelight,
+          badge: scene.motionShown ? MOTION_LABEL : undefined,
+        });
+      }
       if (glowRef.current) glowRef.current.style.opacity = String(safelight * 0.55);
 
       const rec = recorderRef.current;
       if (rec) {
-        rec.rec.draw(canvas);
+        rec.rec.draw(canvas, tl && slideLayout ? slideLayout : undefined);
         if (t >= Math.min(rec.stopAt, MAX_RECORD_S)) void finishRecording();
       }
 
       if (develop >= 1 && phaseRef.current === 'developing') {
         setPhaseBoth('live');
-        if (rec) rec.stopAt = t + 4 * music.barSeconds; // ещё 4 такта живого снимка (голос продлит)
+        // отпечаток: ещё 4 такта живого снимка; слайд-шоу: весь круг кадров, 15–60 с (голос продлит)
+        if (rec) rec.stopAt = tl ? slideshowSeconds(day.photos.length, tl) : t + 4 * music.barSeconds;
         void playVoice(day.id);
-        if (!thumbDoneRef.current) {
+        if (!thumbDoneRef.current && !tl) {
           thumbDoneRef.current = true;
           // окно уже отрисовано полностью проявленным — снимаем миниатюру для архива
           renderThumb(win, recipe.caption, day.date)
@@ -261,11 +349,31 @@ export default function Develop() {
     });
     const offVoice = onVoice((e) => {
       if (e.dayId !== day.id) return;
+      if (e.type === 'progress') {
+        setVoiceNote(
+          e.progress <= 0
+            ? 'голос «Ирина»: готовлю на устройстве…'
+            : e.progress < 1
+              ? `голос «Ирина»: загрузка модели ${Math.round(e.progress * 100)}%`
+              : 'голос «Ирина»: синтезирую…',
+        );
+        return;
+      }
       if (e.type === 'ready') {
         setVoiceNote('озвучка готова · синтезированный голос');
         void playVoice(day.id);
-      } else if (e.type === 'unavailable') setVoiceNote(e.reason);
-      else setVoiceNote(`озвучка не удалась: ${e.error}`);
+      } else if (e.type === 'unavailable') {
+        setVoiceNote(e.reason);
+        // без ключа — голос браузера, если в системе есть русский голос
+        if (browserVoiceSupported()) {
+          void ensureBrowserVoices().then((voices) => {
+            if (disposed || !pickBrowserVoice(voices, (recipeRef.current ?? day.recipe).atmosphere.energy)) return;
+            browserVoiceRef.current = true;
+            setVoiceNote('озвучка: голос браузера (у сервера нет ключа) · синтезированный голос');
+            void playVoice(day.id);
+          });
+        }
+      } else setVoiceNote(`озвучка не удалась: ${e.error}`);
     });
     // ИИ-оживление генерируется минутами — готовое видео подхватываем на лету
     const offMotion = onMotion(async (e) => {
@@ -326,6 +434,9 @@ export default function Develop() {
       offDepth();
       offVoice();
       offMotion();
+      resizeRef.current = () => {};
+      speechRef.current?.stop();
+      speechRef.current = null;
       stage.removeEventListener('pointermove', onPointer);
       stage.removeEventListener('pointerleave', onLeave);
       window.removeEventListener('deviceorientation', onOrient);
@@ -356,7 +467,14 @@ export default function Develop() {
       if (s.source === 'file' && day.audioFile) await player.load(day.audioFile);
       else if ((s.source === 'deezer' || s.source === 'itunes') && s.id) await player.load((await fetchPreview(s.source, s.id)).data);
     } catch (e) {
-      setNotice(`Музыка недоступна (${(e as Error).message}) — проявляю без неё, в том же темпе`);
+      const msg = (e as Error).message;
+      setMusicFail(true);
+      // 404/405 — сервера нет вовсе (GitHub Pages): ритм остаётся, а песню можно открыть по ссылке
+      setNotice(
+        /\((404|405)\)/.test(msg)
+          ? 'Без сервера превью песни не загрузить — проявляю в её темпе; саму песню можно открыть ♪'
+          : `Музыка недоступна (${msg}) — проявляю без неё, в том же темпе`,
+      );
     }
     loopSecRef.current = player.buffer?.duration;
     // у дня нет огибающей RMS (демо-дни) — считаем её из буфера один раз и сохраняем
@@ -371,8 +489,12 @@ export default function Develop() {
     voicePlayedRef.current = false;
     if (opts.record) {
       const canvas = canvasRef.current!;
-      const k = Math.min(1, 1920 / Math.max(canvas.width, canvas.height)); // видео не больше 1920 по длинной стороне
-      const rec = new DevelopRecorder(canvas.width * k, canvas.height * k, player.recordingTrack());
+      // слайд-шоу пишем только кадром 9:16, отпечаток — целиком со столом
+      const rect = viewRef.current === 'slides' ? slideRectRef.current : null;
+      const srcW = rect ? rect.w : canvas.width;
+      const srcH = rect ? rect.h : canvas.height;
+      const k = Math.min(1, 1920 / Math.max(srcW, srcH)); // видео не больше 1920 по длинной стороне
+      const rec = new DevelopRecorder(srcW * k, srcH * k, player.recordingTrack());
       recorderRef.current = { rec, stopAt: Infinity }; // граница появится, когда снимок проявится
       setRecording(true);
       setNotice('● запись проявки…');
@@ -384,6 +506,8 @@ export default function Develop() {
   function redevelop() {
     recorderRef.current?.rec.stop();
     recorderRef.current = null;
+    speechRef.current?.stop();
+    speechRef.current = null;
     setRecording(false);
     playerRef.current?.dispose();
     playerRef.current = null;
@@ -429,6 +553,22 @@ export default function Develop() {
   function recordVideo() {
     redevelop();
     void startDevelop({ record: true });
+  }
+
+  /** Тот же день другим способом: окно сцены перестраивается, проявка начинается заново (если шла). */
+  function switchView(v: View) {
+    if (v === viewRef.current) return;
+    viewRef.current = v;
+    setView(v);
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // приватный режим — выбор просто не запомнится
+    }
+    resizeRef.current();
+    const wasPlaying = phaseRef.current !== 'idle';
+    redevelop();
+    if (wasPlaying) void startDevelop();
   }
 
   /** ИИ-оживление: только по явному согласию; уже оживлённый день — кнопка убирает видео. */
@@ -515,6 +655,13 @@ export default function Develop() {
       <header className="topbar overlay">
         <Link to="/#archive" className="mono">← контактный лист</Link>
         <div className="topbar-actions">
+          <div className="view-switch" role="radiogroup" aria-label="Как проявить день">
+            {(['print', 'slides'] as const).map((v) => (
+              <button key={v} type="button" role="radio" aria-checked={view === v} onClick={() => switchView(v)}>
+                {v === 'print' ? 'Отпечаток' : 'Слайд-шоу'}
+              </button>
+            ))}
+          </div>
           <span className="mono dim">{day.folderName}</span>
           <ThemePicker />
         </div>
@@ -524,18 +671,22 @@ export default function Develop() {
         <div ref={glowRef} className="safelight-glow" />
         <div className={`card${flipped ? ' flipped' : ''}`}>
           <canvas ref={canvasRef} className="face front" />
-          {cssLayout && (
-            <div
-              className="face back"
-              style={{ left: cssLayout.printX, top: cssLayout.printY, width: cssLayout.printW, height: cssLayout.printH }}
-            >
+          {backRect && (
+            <div className="face back" style={backRect}>
               <p className="caveat back-caption">«{r.caption}»</p>
               <div className="lab-stamp mono">
                 <div className="stamp-title">{r.folderName}</div>
                 <div>{dateStamp(day.date)} · {r.process.map((p) => `${PROCESS_NAMES[p.id]} ${Math.round(p.weight * 100)}%`).join(' / ')}</div>
               </div>
               <p className="mono small">
-                ♪ {day.song.artist} — {day.song.title}
+                ♪{' '}
+                {day.song.link ? (
+                  <a href={day.song.link} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
+                    {day.song.artist} — {day.song.title}
+                  </a>
+                ) : (
+                  `${day.song.artist} — ${day.song.title}`
+                )}
                 <br />
                 {Math.round(m.bpm)} BPM · {m.source === 'audio' ? keyRu(m.key, m.mode) : m.mode === 'major' ? 'мажор' : 'минор'}
               </p>
@@ -556,11 +707,19 @@ export default function Develop() {
 
         {phase === 'idle' && <div className="hint mono">Коснитесь, чтобы проявить</div>}
         {phase === 'loading' && <div className="hint mono">Заряжаю звук…</div>}
-        {phase === 'live' && !flipped && <div className="hint subtle mono">коснитесь — оборот</div>}
+        {phase === 'live' && !flipped && (
+          // в слайд-шоу внизу подпись и дата — подсказка уходит наверх
+          <div className={`hint subtle mono${view === 'slides' ? ' high' : ''}`}>коснитесь — оборот</div>
+        )}
       </div>
 
       <footer className="develop-bar">
         {notice && <span className="mono small notice bar-note">{notice}</span>}
+        {musicFail && day.song.link && (
+          <a className="btn small" href={day.song.link} target="_blank" rel="noreferrer">
+            ♪ Открыть песню
+          </a>
+        )}
         <div className="mood" title="Поправить настроение — отпечаток проявится заново">
           {moodSlider('energy', 'тише', 'ярче')}
           {moodSlider('tone', 'тяжелее', 'светлее')}
@@ -573,7 +732,7 @@ export default function Develop() {
         </button>
         {DevelopRecorder.supported() && (
           <button className="btn ghost small" onClick={recordVideo} disabled={recording}>
-            {recording ? '● Запись…' : 'Записать видео'}
+            {recording ? '● Запись…' : view === 'slides' ? 'Записать видео 9:16' : 'Записать видео'}
           </button>
         )}
         {memory && (

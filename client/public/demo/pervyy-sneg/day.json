@@ -18,14 +18,14 @@
   "photos": [
     {
       "file": "01.jpg",
-      "width": 900,
-      "height": 1125,
+      "width": 1600,
+      "height": 2400,
       "palette": [
-        "#d1e0ef",
-        "#ebf1f8",
-        "#fafbfd",
-        "#846653",
-        "#c0d5ea"
+        "#9999a7",
+        "#a8abba",
+        "#bfc3cf",
+        "#636367",
+        "#8c8c96"
       ]
     }
   ]

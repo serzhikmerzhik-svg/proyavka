@@ -98,6 +98,40 @@ const smooth = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/** Оранжевый DSEG7-штамп даты в правом нижнем углу кадра (right/bottom — край кадра). */
+function drawDateStamp(ctx: CanvasRenderingContext2D, date: string, right: number, bottom: number, size: number, alpha: number) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha * 0.92;
+  ctx.font = `${size}px DSEG7, "JetBrains Mono", monospace`;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = COLORS.stamp;
+  ctx.shadowColor = 'rgba(255,120,20,0.85)';
+  ctx.shadowBlur = size * 0.5;
+  // В DSEG7 пробел узкий — группы «'26», «11», «19» ставим сами, с промежутком почти в цифру
+  const gap = ctx.measureText('8').width * 0.6;
+  let x = right - size * 0.9;
+  const y = bottom - size * 0.8;
+  for (const part of dateStamp(date).split(' ').reverse()) {
+    ctx.fillText(part, x, y);
+    x -= ctx.measureText(part).width + gap;
+  }
+  ctx.restore();
+}
+
+/** Рукописная подпись по центру (Caveat), с ужатием, если не влезает. */
+function drawCaption(ctx: CanvasRenderingContext2D, text: string, cx: number, cy: number, size: number, maxW: number) {
+  ctx.font = `${size}px Caveat, cursive`;
+  const w = ctx.measureText(text).width;
+  if (w > maxW) ctx.font = `${(size * maxW) / w}px Caveat, cursive`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.translate(cx, cy);
+  ctx.rotate(-0.012);
+  ctx.fillText(text, 0, 0);
+}
+
 export type PrintOverlay = {
   caption: string;
   date: string;
@@ -129,49 +163,17 @@ export function drawPrint(ctx: CanvasRenderingContext2D, L: PrintLayout, gl: HTM
   ctx.restore();
 
   // штамп даты — впечатан в плёнку, проявляется вместе со снимком
-  const stampA = smooth(0.55, 1, o.develop);
-  if (stampA > 0) {
-    const size = L.photoW * 0.045;
-    ctx.save();
-    ctx.globalAlpha = stampA * 0.92;
-    ctx.font = `${size}px DSEG7, "JetBrains Mono", monospace`;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = COLORS.stamp;
-    ctx.shadowColor = 'rgba(255,120,20,0.85)';
-    ctx.shadowBlur = size * 0.5;
-    // В DSEG7 пробел узкий — группы «'26», «11», «19» ставим сами, с промежутком почти в цифру
-    const gap = ctx.measureText('8').width * 0.6;
-    let x = L.photoX + L.photoW - size * 0.9;
-    const y = L.photoY + L.photoH - size * 0.8;
-    for (const part of dateStamp(o.date).split(' ').reverse()) {
-      ctx.fillText(part, x, y);
-      x -= ctx.measureText(part).width + gap;
-    }
-    ctx.restore();
-  }
+  drawDateStamp(ctx, o.date, L.photoX + L.photoW, L.photoY + L.photoH, L.photoW * 0.045, smooth(0.55, 1, o.develop));
 
   // рукописная подпись под снимком
   const capA = smooth(0.85, 1, o.develop);
   if (capA > 0 && o.caption) {
     const bottomTop = L.photoY + L.photoH;
     const bottomH = L.printY + L.printH - bottomTop;
-    let size = L.printW * 0.065;
     ctx.save();
     ctx.globalAlpha = capA;
     ctx.fillStyle = COLORS.ink;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `${size}px Caveat, cursive`;
-    const maxW = L.photoW * 0.95;
-    const w = ctx.measureText(o.caption).width;
-    if (w > maxW) {
-      size *= maxW / w;
-      ctx.font = `${size}px Caveat, cursive`;
-    }
-    ctx.translate(L.printX + L.printW / 2, bottomTop + bottomH * 0.48);
-    ctx.rotate(-0.012);
-    ctx.fillText(o.caption, 0, 0);
+    drawCaption(ctx, o.caption, L.printX + L.printW / 2, bottomTop + bottomH * 0.48, L.printW * 0.065, L.photoW * 0.95);
     ctx.restore();
   }
 
@@ -239,6 +241,137 @@ export function drawTable(ctx: CanvasRenderingContext2D, W: number, H: number) {
 }
 
 /** Миниатюра для контактного листа: тёмный стол + полностью проявленный отпечаток. */
+// ---------- слайд-шоу: вертикальный кадр 9:16 ----------
+
+export type SlideLayout = { x: number; y: number; w: number; h: number };
+
+/** top — высота верхней панели над сценой: кадр 9:16 встаёт ниже неё, чтобы полоски и название не прятались. */
+export function computeSlideLayout(W: number, H: number, pad = 0.035, top = 0): SlideLayout {
+  const availH = H - top;
+  const w = Math.min(W * (1 - 2 * pad), availH * (1 - 2 * pad) * (9 / 16));
+  const h = (w * 16) / 9;
+  return { x: (W - w) / 2, y: top + (availH - h) / 2, w, h };
+}
+
+export type SlideOverlay = {
+  caption: string;
+  date: string;
+  /** название папки дня */
+  title: string;
+  develop: number;
+  safelight: number;
+  /** какой кадр из скольких и насколько он прошёл — полоски, как в сторис */
+  slide: number;
+  slides: number;
+  seg: number;
+  badge?: string;
+};
+
+/**
+ * Кадр слайд-шоу: те же постоянные элементы, что у отпечатка, — DSEG7-дата в углу кадра, Caveat-подпись,
+ * название папки, красный фонарь на проявке; сверху полоски кадров.
+ */
+export function drawSlideFrame(ctx: CanvasRenderingContext2D, L: SlideLayout, win: HTMLCanvasElement, o: SlideOverlay) {
+  const { x, y, w, h } = L;
+  const frame = new Path2D();
+  frame.roundRect(x, y, w, h, w * 0.03);
+
+  ctx.save();
+  ctx.fillStyle = COLORS.lab;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = w * 0.08;
+  ctx.fillStyle = '#000';
+  ctx.fill(frame);
+  ctx.restore();
+
+  ctx.save();
+  ctx.clip(frame);
+  ctx.drawImage(win, x, y, w, h);
+
+  // затемнение сверху и снизу — чтобы читались полоски, название и подпись
+  const top = ctx.createLinearGradient(0, y, 0, y + h * 0.2);
+  top.addColorStop(0, 'rgba(0,0,0,0.45)');
+  top.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = top;
+  ctx.fillRect(x, y, w, h * 0.2);
+  const capA = smooth(0.85, 1, o.develop);
+  const bottom = ctx.createLinearGradient(0, y + h * 0.66, 0, y + h);
+  bottom.addColorStop(0, 'rgba(0,0,0,0)');
+  bottom.addColorStop(1, `rgba(0,0,0,${0.55 * capA})`);
+  ctx.fillStyle = bottom;
+  ctx.fillRect(x, y + h * 0.66, w, h * 0.34);
+
+  // полоски кадров
+  const pad = w * 0.05;
+  const gap = Math.max(2, w * 0.012);
+  const barH = Math.max(2, w * 0.007);
+  const segW = (w - 2 * pad - gap * (o.slides - 1)) / o.slides;
+  for (let i = 0; i < o.slides; i++) {
+    const sx = x + pad + i * (segW + gap);
+    const sy = y + pad * 0.7;
+    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+    ctx.fillRect(sx, sy, segW, barH);
+    const fill = i < o.slide ? 1 : i === o.slide ? Math.min(1, Math.max(0, o.seg)) : 0;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.fillRect(sx, sy, segW * fill, barH);
+  }
+
+  // название папки и пометка
+  const small = Math.max(9, w * 0.032);
+  ctx.font = `${small}px "JetBrains Mono", monospace`;
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.textAlign = 'left';
+  ctx.fillText(o.title, x + pad, y + pad * 0.7 + barH + small * 0.8, w - 2 * pad);
+  if (o.badge) {
+    ctx.textAlign = 'right';
+    ctx.globalAlpha = 0.85;
+    ctx.fillText(`✦ ${o.badge}`, x + w - pad, y + pad * 0.7 + barH + small * 2.2);
+    ctx.globalAlpha = 1;
+  }
+
+  // заставка: пока кадр проявляется, на бумаге — название дня
+  const titleA = 1 - smooth(0.45, 0.85, o.develop);
+  if (titleA > 0.01) {
+    ctx.save();
+    ctx.globalAlpha = titleA;
+    ctx.fillStyle = COLORS.ink;
+    drawCaption(ctx, o.title, x + w / 2, y + h * 0.46, w * 0.1, w * 0.84);
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = titleA * 0.8;
+    ctx.fillStyle = COLORS.ink;
+    ctx.font = `${small}px "JetBrains Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(dateStamp(o.date).replace(/ /g, ' · '), x + w / 2, y + h * 0.54);
+    ctx.restore();
+  }
+
+  drawDateStamp(ctx, o.date, x + w - pad * 0.4, y + h - pad * 0.2, w * 0.05, smooth(0.55, 1, o.develop));
+
+  if (capA > 0 && o.caption) {
+    ctx.save();
+    ctx.globalAlpha = capA;
+    ctx.fillStyle = '#fffaf0';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = w * 0.02;
+    drawCaption(ctx, o.caption, x + w / 2, y + h * 0.86, w * 0.085, w * 0.86);
+    ctx.restore();
+  }
+
+  // красный фонарь — пока первый кадр проявляется
+  if (o.safelight > 0.001) {
+    ctx.globalCompositeOperation = 'multiply';
+    const a = o.safelight;
+    ctx.fillStyle = `rgb(255, ${Math.round(255 - 185 * a)}, ${Math.round(255 - 205 * a)})`;
+    ctx.fillRect(x, y, w, h);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  ctx.restore();
+}
+
 export function renderThumb(gl: HTMLCanvasElement, caption: string, date: string): Promise<Blob> {
   const W = 480;
   const H = 620;

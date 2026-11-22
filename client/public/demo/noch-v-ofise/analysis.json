@@ -1,22 +1,57 @@
 {
-  "atmosphere": { "energy": 0.85, "tone": 0.2, "together": 0.55, "special": 0.3 },
+  "atmosphere": {
+    "energy": 0.85,
+    "tone": 0.2,
+    "together": 0.55,
+    "special": 0.3
+  },
   "label": "push_montage",
   "timeOfDay": "night",
   "season": "spring",
-  "contrast": { "has": false },
-  "air": ["steam"],
+  "contrast": {
+    "has": false
+  },
+  "air": [
+    "steam"
+  ],
   "captionQuote": "кофе уже не помогает",
-  "folderNames": ["Ночь в офисе перед сдачей", "Офис, кофе и дедлайн", "Три часа до сдачи", "Ночной офис и коллеги", "Последняя ночь перед дедлайном"],
+  "folderNames": [
+    "Ночь в офисе перед сдачей",
+    "Офис, кофе и дедлайн",
+    "Три часа до сдачи",
+    "Ночной офис и коллеги",
+    "Последняя ночь перед дедлайном"
+  ],
   "voiceStyle": "Говори сдержанно и чуть быстрее обычного, с усталостью и напряжением в голосе, без драматизма.",
-  "bestPhotoIndex": 1,
+  "bestPhotoIndex": 0,
   "photoNotes": [
-    { "index": 0, "scene": "мониторы в тёмном офисе", "people": false },
-    { "index": 1, "scene": "коллеги у стола ночью", "people": true },
-    { "index": 2, "scene": "остывший кофе у клавиатуры", "people": false },
-    { "index": 3, "scene": "окна ночного города", "people": false }
+    {
+      "index": 0,
+      "scene": "силуэт за столом у ночного окна",
+      "people": true
+    },
+    {
+      "index": 1,
+      "scene": "человек в наушниках за ноутбуком, огни города",
+      "people": true
+    },
+    {
+      "index": 2,
+      "scene": "окна офиса ночью, внутри люди",
+      "people": true
+    }
   ],
   "music": {
-    "bpm": 126, "beatOffset": 0.143, "barSeconds": 1.905, "rmsEnvelope": [], "rmsMean": 0.48, "brightness": 0.8,
-    "key": "C#", "mode": "minor", "modeConfidence": 0.08, "era": "digicam", "source": "audio"
+    "bpm": 126,
+    "beatOffset": 0.143,
+    "barSeconds": 1.905,
+    "rmsEnvelope": [],
+    "rmsMean": 0.48,
+    "brightness": 0.8,
+    "key": "C#",
+    "mode": "minor",
+    "modeConfidence": 0.08,
+    "era": "digicam",
+    "source": "audio"
   }
 }

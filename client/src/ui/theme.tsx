@@ -10,6 +10,7 @@ export const THEMES = [
   { id: 'cyanotype', name: 'Цианотипия', bg: '#071a2c', accent: '#3d8fd6', light: false },
   { id: 'platinum', name: 'Платина', bg: '#1b1917', accent: '#c9a46c', light: false },
   { id: 'neon', name: 'Ночная плёнка', bg: '#0b0b12', accent: '#7c5cff', light: false },
+  { id: 'ai', name: 'Нейросеть', bg: '#07070d', accent: '#22d3ee', light: false },
   { id: 'polaroid', name: 'Моментальное фото', bg: '#f4f1ea', accent: '#e2573b', light: true },
 ] as const;
 export type ThemeId = (typeof THEMES)[number]['id'];
@@ -55,7 +56,7 @@ export function ThemePicker() {
           aria-checked={current === t.id}
           aria-label={t.name}
           title={t.name}
-          className="swatch"
+          className={`swatch${t.id === 'ai' ? ' swatch-ai' : ''}`}
           style={{ '--sw-bg': t.bg, '--sw-accent': t.accent } as CSSProperties}
           onClick={(e) => {
             e.stopPropagation();
