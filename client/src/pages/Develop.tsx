@@ -65,6 +65,9 @@ const MAX_RECORD_S = 60;
 
 type OrientationPermission = { requestPermission?: () => Promise<'granted' | 'denied'> };
 
+/** ИИ-оживление деталей скрыто из интерфейса по решению команды; код и сервер остаются. */
+const SHOW_AI_MOTION = false;
+
 /** Два способа проявить один и тот же день: отпечаток на столе или слайд-шоу 9:16. */
 type View = 'print' | 'slides';
 const VIEW_KEY = 'proyavka:view';
@@ -768,7 +771,7 @@ export default function Develop() {
             Скачать видео
           </button>
         )}
-        <button
+        {SHOW_AI_MOTION && <button
           className={`btn small${motion ? ' ghost' : ' ai'}`}
           onClick={() => void toggleMotion()}
           disabled={Boolean(motionProg)}
@@ -784,7 +787,7 @@ export default function Develop() {
             : motion
               ? '✦ Убрать оживление'
               : '✦ Оживить детали'}
-        </button>
+        </button>}
         <button className="btn ghost small" onClick={() => void downloadFolder()} disabled={zipping}>
           {zipping ? 'Собираю…' : 'Скачать папку'}
         </button>
