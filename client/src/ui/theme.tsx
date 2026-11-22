@@ -34,12 +34,17 @@ export function applyTheme(id: ThemeId) {
 /** Вызвать до первого рендера, чтобы не мигала палитра по умолчанию. */
 export function initTheme() {
   let saved: string | null = null;
+  let migrated = false;
   try {
     saved = localStorage.getItem(KEY);
+    migrated = localStorage.getItem(`${KEY}:v`) === '2';
+    localStorage.setItem(`${KEY}:v`, '2');
   } catch {
     saved = null;
   }
-  applyTheme(isTheme(saved) ? saved : DEFAULT);
+  // раньше палитра по умолчанию («Тёмная комната») сохранялась сама — её не считаем выбором зрителя
+  const chosen = isTheme(saved) && (migrated || saved !== 'darkroom');
+  applyTheme(chosen ? (saved as ThemeId) : DEFAULT);
 }
 
 export function ThemePicker() {
