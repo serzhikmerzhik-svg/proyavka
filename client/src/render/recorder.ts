@@ -44,6 +44,9 @@ export class DevelopRecorder {
   draw(source: HTMLCanvasElement, rect?: { x: number; y: number; w: number; h: number }) {
     const { width: W, height: H } = this.canvas;
     if (rect) {
+      // углы кадра на экране прозрачные — в видео под ними чёрный, а не прошлые кадры
+      this.ctx.fillStyle = '#000';
+      this.ctx.fillRect(0, 0, W, H);
       this.ctx.drawImage(source, rect.x, rect.y, rect.w, rect.h, 0, 0, W, H);
       return;
     }

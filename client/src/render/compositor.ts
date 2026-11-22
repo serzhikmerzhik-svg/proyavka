@@ -276,9 +276,8 @@ export function drawSlideFrame(ctx: CanvasRenderingContext2D, L: SlideLayout, wi
   const frame = new Path2D();
   frame.roundRect(x, y, w, h, w * 0.03);
 
+  // вокруг кадра холст прозрачный — сквозь него видно сияние дня на сцене
   ctx.save();
-  ctx.fillStyle = COLORS.lab;
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.shadowColor = 'rgba(0,0,0,0.6)';
   ctx.shadowBlur = w * 0.08;
   ctx.fillStyle = '#000';

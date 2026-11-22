@@ -16,7 +16,8 @@ export const THEMES = [
 export type ThemeId = (typeof THEMES)[number]['id'];
 
 const KEY = 'proyavka:theme';
-const DEFAULT: ThemeId = 'darkroom';
+// новые зрители видят «Нейросеть»; выбранная палитра запоминается
+const DEFAULT: ThemeId = 'ai';
 const isTheme = (v: unknown): v is ThemeId => THEMES.some((t) => t.id === v);
 
 export function applyTheme(id: ThemeId) {

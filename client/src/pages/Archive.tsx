@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Entrance } from '../ui/Entrance';
 import { listDays } from '../storage/db';
@@ -18,12 +18,28 @@ function haystack(d: Day): string {
     .replace(/ё/g, 'е');
 }
 
+/** Карточка дня: отпечаток, название папки, ритм, процессы и палитра — свечение карточки в цвет самого дня. */
 function DayCard({ day, url }: { day: Day; url?: string }) {
+  const r = day.recipe;
   return (
-    <Link to={`/day/${day.id}`} className="contact">
-      {url ? <img src={url} alt={day.folderName} loading="lazy" /> : <div className="contact-blank" />}
-      <span className="contact-label mono">
-        <span className="frame-no">{day.date.split('-').reverse().join('.')}</span> {day.folderName}
+    <Link to={`/day/${day.id}`} className="contact" style={{ '--day-glow': r.palette[0] ?? 'var(--accent)' } as CSSProperties}>
+      <span className="contact-media">
+        {url ? <img src={url} alt={day.folderName} loading="lazy" /> : <span className="contact-blank" />}
+        {day.motion && <span className="contact-badge mono">✦ ИИ</span>}
+      </span>
+      <span className="contact-body">
+        <span className="contact-title">{day.folderName}</span>
+        <span className="contact-meta mono">
+          <span className="frame-no">{day.date.split('-').reverse().join('.')}</span> · {Math.round(r.music.bpm)} BPM
+        </span>
+        <span className="contact-chips">
+          {r.process.map((p) => (
+            <span key={p.id} className="chip mono">{PROCESS_NAMES[p.id]} {Math.round(p.weight * 100)}%</span>
+          ))}
+        </span>
+        <span className="palette-bar" aria-hidden="true">
+          {r.palette.map((c) => <i key={c} style={{ background: c }} />)}
+        </span>
       </span>
     </Link>
   );

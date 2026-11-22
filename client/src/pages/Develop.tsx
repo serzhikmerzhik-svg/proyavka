@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { deleteDay, getDay, updateDay } from '../storage/db';
+import { importDemoDays } from '../storage/demo';
+import { DayInsights } from '../ui/DayInsights';
 import { downloadDayZip } from '../storage/zip';
 import { PrintScene, exportPrintPng } from '../render/printScene';
 import {
@@ -115,6 +117,8 @@ export default function Develop() {
   const [backRect, setBackRect] = useState<Box | null>(null);
   const [view, setView] = useState<View>(loadView);
   const [musicFail, setMusicFail] = useState(false);
+  // «Разбор дня» открыт сразу, если экран широкий и панель не закроет отпечаток
+  const [insightsOpen, setInsightsOpen] = useState(() => window.innerWidth >= 1200);
 
   const viewRef = useRef<View>(view);
   const resizeRef = useRef<() => void>(() => {});
@@ -141,7 +145,17 @@ export default function Develop() {
 
   useEffect(() => {
     let alive = true;
-    getDay(id).then((d) => {
+    getDay(id).then(async (found) => {
+      let d = found;
+      // прямая ссылка на демо-день (например, из описания для жюри): демо-дни подгружаются сами
+      if (!d && id.startsWith('demo-')) {
+        try {
+          await importDemoDays();
+          d = await getDay(id);
+        } catch {
+          // нет сети — покажем «такого дня нет»
+        }
+      }
       if (!alive) return;
       setDay(d ?? null);
       if (d) {
@@ -655,6 +669,14 @@ export default function Develop() {
       <header className="topbar overlay">
         <Link to="/#archive" className="mono">← контактный лист</Link>
         <div className="topbar-actions">
+          <button
+            type="button"
+            className="insights-toggle"
+            aria-pressed={insightsOpen}
+            onClick={() => setInsightsOpen((v) => !v)}
+          >
+            ✦ Разбор
+          </button>
           <div className="view-switch" role="radiogroup" aria-label="Как проявить день">
             {(['print', 'slides'] as const).map((v) => (
               <button key={v} type="button" role="radio" aria-checked={view === v} onClick={() => switchView(v)}>
@@ -667,7 +689,13 @@ export default function Develop() {
         </div>
       </header>
 
-      <div ref={stageRef} className="stage" onClick={onStageTap}>
+      <div
+        ref={stageRef}
+        className="stage"
+        onClick={onStageTap}
+        style={{ '--day-a': r.palette[0], '--day-b': r.palette[1] ?? r.palette[0], '--day-c': r.palette[2] ?? r.palette[0] } as CSSProperties}
+      >
+        {insightsOpen && <DayInsights day={day} recipe={r} onClose={() => setInsightsOpen(false)} />}
         <div ref={glowRef} className="safelight-glow" />
         <div className={`card${flipped ? ' flipped' : ''}`}>
           <canvas ref={canvasRef} className="face front" />
